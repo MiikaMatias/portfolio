@@ -1,0 +1,4 @@
+# config/config.yaml
+app:
+  name: NLPortfolio
+  working_dir: /home/miika/projects/portfolio/backend

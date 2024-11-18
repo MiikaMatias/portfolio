@@ -1,0 +1,25 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: NLPortfolio
+paths:
+  /ping:
+    get:
+      responses:
+        '200':
+          description: pong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+  
+components:
+  schemas:
+    Pong:
+      type: object
+      required:
+        - ping
+      properties:
+        ping:
+          type: string
+          example: pong
