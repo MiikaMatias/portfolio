@@ -1,0 +1,4 @@
+# cmd/config.yaml
+app:
+  name: NLPortfolio
+  workingDir: /home/miika/projects/portfolio/backend

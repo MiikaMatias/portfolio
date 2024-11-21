@@ -1,0 +1,39 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: NLPortfolio
+paths:
+  /ping:
+    get:
+      responses:
+        '200':
+          description: ping
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Pong'
+  /ai-response:
+    get:
+      responses:
+        '200':
+          description: fetch a response by an LLM
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiResponse'
+  
+components:
+  schemas:
+
+    Pong:
+      type: string
+      example: pong
+
+    AiResponse:
+      type: object
+      required:
+        - AiResponse
+      properties:
+        AiResponse:
+          type: string
+          example: Hello world!
