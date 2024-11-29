@@ -18,8 +18,9 @@ const (
 
 type Config struct {
 	App struct {
-		Name       string `yaml:"name"`
-		WorkingDir string `yaml:"workingDir"`
+		Name        string `yaml:"name"`
+		WorkingDir  string `yaml:"workingDir"`
+		BackendPort string `yaml:"backendPort"`
 	} `yaml:"app"`
 }
 
@@ -42,19 +43,21 @@ func loadConfig() (*Config, error) {
 func main() {
 	config, err := loadConfig()
 	if err != nil {
-		fmt.Printf("Error: %s", err)
+		log.Fatalf("Error: %s", err)
 		return
 	}
 
-	fmt.Printf("Config: %s", config.App.WorkingDir)
+	log.Printf("Config: %s\n", config.App.WorkingDir)
 
 	server := api.NewServer()
 	r := chi.NewMux()
 	h := gen.HandlerFromMux(server, r)
 
+	portString := fmt.Sprintf("0.0.0.0:%s", config.App.BackendPort)
+	log.Printf("Server running on http://%s\n", portString)
 	s := &http.Server{
 		Handler: h,
-		Addr:    "0.0.0.0:8080",
+		Addr:    portString,
 	}
 
 	log.Fatal(s.ListenAndServe())

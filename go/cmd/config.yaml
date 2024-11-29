@@ -1,4 +1,5 @@
 # cmd/config.yaml
 app:
   name: NLPortfolio
-  workingDir: /home/miika/projects/portfolio/backend
+  workingDir: /home/miika/Project/portfolio/go
+  backendPort: 8080
