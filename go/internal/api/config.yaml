@@ -3,3 +3,7 @@ generate:
   chi-server: true
   models: true
 output: internal/api/gen/gen.go
+
+app:
+  ollamaUrl: http://localhost:11434/api/generate
+  ollamaModelToUse: mistral
