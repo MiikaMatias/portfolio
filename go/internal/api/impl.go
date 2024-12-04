@@ -18,12 +18,18 @@ const (
 
 type Config struct {
 	App struct {
-		OllamaUrl        string `yaml:"ollamaUrl"`
-		OllamaModelToUse string `yaml:"ollamaModelToUse"`
+		EncodingUrl     string `yaml:"encodingUrl"`
+		EncodingModel   string `yaml:"encodingModel"`
+		GeneratingUrl   string `yaml:"generatingUrl"`
+		GeneratingModel string `yaml:"generatingModel"`
 	} `yaml:"app"`
 }
 
-type OllamaReply struct {
+type VectorEmbedding struct {
+	Embedding []float32 `json:"embedding"`
+}
+
+type LlmReply struct {
 	Response string `json:"response"`
 }
 
@@ -49,14 +55,13 @@ func NewServer() Server {
 	return Server{}
 }
 
-func fetchLlmReply(config Config) string {
+func getVectorEncoding(prompt string, config Config) []float32 {
 	body := []byte(fmt.Sprintf(`{
 		"model": "%s",
-		"prompt": "Why is the sky blue?",
-		"stream": false
-	}`, config.App.OllamaModelToUse))
+		"prompt": "%s"
+	}`, config.App.EncodingModel, prompt))
 
-	r, err := http.NewRequest("POST", config.App.OllamaUrl, bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", config.App.EncodingUrl, bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatalf("Error constructing request: %s", err)
 	}
@@ -69,30 +74,81 @@ func fetchLlmReply(config Config) string {
 	log.Printf("Received response: %s", res)
 	defer res.Body.Close()
 
-	llmReply := &OllamaReply{}
-	derr := json.NewDecoder(res.Body).Decode(llmReply)
+	vectorReply := &VectorEmbedding{}
+	derr := json.NewDecoder(res.Body).Decode(vectorReply)
 	if derr != nil {
 		log.Fatalf("Error decoding Ollama reply: %s", err)
 	}
 
+	return vectorReply.Embedding
+}
+
+func getGeneratedResponse(prompt string, config Config) string {
+	body := []byte(fmt.Sprintf(`{
+		"model": "%s",
+		"prompt": "%s",
+		"stream": false
+	}`, config.App.GeneratingModel, prompt))
+
+	r, err := http.NewRequest("POST", config.App.GeneratingUrl, bytes.NewBuffer(body))
+	if err != nil {
+		log.Fatalf("Error constructing request: %s", err)
+	}
+
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		log.Fatalf("Error sending POST request: %s", err)
+	}
+	log.Printf("Received response: %s", res)
+	defer res.Body.Close()
+
+	llmReply := &LlmReply{}
+	derr := json.NewDecoder(res.Body).Decode(llmReply)
+	if derr != nil {
+		log.Fatalf("Error decoding Ollama reply: %s", err)
+	}
+	log.Printf("Decoded response: %v", llmReply.Response)
+
 	return llmReply.Response
 }
 
-func (Server) GetAiResponse(w http.ResponseWriter, r *http.Request) {
+func (Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatalf("Error: %s", err)
 		return
 	}
 
-	log.Printf("Utilising model: %s\n", config.App.OllamaModelToUse)
+	log.Printf("Utilising model: %s\n", config.App.EncodingModel)
 
-	llmReply := fetchLlmReply(*config)
+	llmReply := getVectorEncoding("hello", *config)
 
 	log.Printf("Reply decoded:", llmReply)
 
-	resp := gen.AiResponse{
-		AiResponse: string(llmReply),
+	resp := gen.EncodedVector{
+		EncodedVector: llmReply,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+func (Server) GetRagReply(w http.ResponseWriter, r *http.Request) {
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+		return
+	}
+
+	log.Printf("Utilising model: %s\n", config.App.GeneratingModel)
+
+	llmReply := getGeneratedResponse("hello", *config)
+
+	log.Printf("Reply decoded:", llmReply)
+
+	resp := gen.RagReply{
+		RagReply: llmReply,
 	}
 
 	w.WriteHeader(http.StatusOK)

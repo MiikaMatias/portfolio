@@ -12,16 +12,26 @@ paths:
             application/json:
               schema: 
                 $ref: '#/components/schemas/Pong'
-  /ai-response:
+  /encode-string:
     get:
       responses:
         '200':
-          description: fetch a response by an LLM
+          description: Return a semantic vector for any string
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AiResponse'
-  
+                $ref: '#/components/schemas/EncodedVector'
+
+  /rag-reply:
+    get:
+      responses:
+        '200':
+          description: Return a rag reply for a query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RagReply'
+
 components:
   schemas:
 
@@ -29,11 +39,22 @@ components:
       type: string
       example: pong
 
-    AiResponse:
+    EncodedVector:
       type: object
       required:
-        - AiResponse
+        - EncodedVector
       properties:
-        AiResponse:
+        EncodedVector:
+          type: array
+          items:
+            type: number
+            example: 1.01
+
+    RagReply:
+      type: object
+      required:
+        - RagReply
+      properties:
+        RagReply:
           type: string
           example: Hello world!

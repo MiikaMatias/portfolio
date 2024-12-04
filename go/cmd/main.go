@@ -18,9 +18,9 @@ const (
 
 type Config struct {
 	App struct {
-		Name             string `yaml:"name"`
-		WorkingDir       string `yaml:"workingDir"`
-		BackendPort      string `yaml:"backendPort"`
+		Name        string `yaml:"name"`
+		WorkingDir  string `yaml:"workingDir"`
+		BackendPort string `yaml:"backendPort"`
 	} `yaml:"app"`
 }
 

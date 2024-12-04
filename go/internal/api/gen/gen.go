@@ -10,35 +10,48 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// AiResponse defines model for AiResponse.
-type AiResponse struct {
-	AiResponse string `json:"AiResponse"`
+// EncodedVector defines model for EncodedVector.
+type EncodedVector struct {
+	EncodedVector []float32 `json:"EncodedVector"`
 }
 
 // Pong defines model for Pong.
 type Pong = string
 
+// RagReply defines model for RagReply.
+type RagReply struct {
+	RagReply string `json:"RagReply"`
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /ai-response)
-	GetAiResponse(w http.ResponseWriter, r *http.Request)
+	// (GET /encode-string)
+	GetEncodeString(w http.ResponseWriter, r *http.Request)
 
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
+
+	// (GET /rag-reply)
+	GetRagReply(w http.ResponseWriter, r *http.Request)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
 
-// (GET /ai-response)
-func (_ Unimplemented) GetAiResponse(w http.ResponseWriter, r *http.Request) {
+// (GET /encode-string)
+func (_ Unimplemented) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // (GET /ping)
 func (_ Unimplemented) GetPing(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// (GET /rag-reply)
+func (_ Unimplemented) GetRagReply(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -51,11 +64,11 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetAiResponse operation middleware
-func (siw *ServerInterfaceWrapper) GetAiResponse(w http.ResponseWriter, r *http.Request) {
+// GetEncodeString operation middleware
+func (siw *ServerInterfaceWrapper) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetAiResponse(w, r)
+		siw.Handler.GetEncodeString(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -70,6 +83,20 @@ func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Reques
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetPing(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetRagReply operation middleware
+func (siw *ServerInterfaceWrapper) GetRagReply(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetRagReply(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -193,10 +220,13 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/ai-response", wrapper.GetAiResponse)
+		r.Get(options.BaseURL+"/encode-string", wrapper.GetEncodeString)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/ping", wrapper.GetPing)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/rag-reply", wrapper.GetRagReply)
 	})
 
 	return r
