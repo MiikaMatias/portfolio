@@ -3,11 +3,13 @@ module github.com/MiikaMatias/portfolio
 go 1.23.3
 
 require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
 	github.com/getkin/kin-openapi v0.128.0 // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
@@ -16,6 +18,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.2-0.20241104134014-18c988718910 // indirect
+	github.com/oapi-codegen/runtime v1.1.1 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/speakeasy-api/openapi-overlay v0.9.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

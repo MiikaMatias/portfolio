@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oapi-codegen/runtime"
 )
 
 // EncodedVector defines model for EncodedVector.
@@ -25,21 +26,22 @@ type RagReply struct {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-
+	// Get encoded vector
 	// (GET /encode-string)
 	GetEncodeString(w http.ResponseWriter, r *http.Request)
 
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
-
-	// (GET /rag-reply)
-	GetRagReply(w http.ResponseWriter, r *http.Request)
+	// Get reply for a prompt through the RAG
+	// (GET /rag-reply/{prompt})
+	GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
 
+// Get encoded vector
 // (GET /encode-string)
 func (_ Unimplemented) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
@@ -50,8 +52,9 @@ func (_ Unimplemented) GetPing(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// (GET /rag-reply)
-func (_ Unimplemented) GetRagReply(w http.ResponseWriter, r *http.Request) {
+// Get reply for a prompt through the RAG
+// (GET /rag-reply/{prompt})
+func (_ Unimplemented) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -92,11 +95,22 @@ func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Reques
 	handler.ServeHTTP(w, r)
 }
 
-// GetRagReply operation middleware
-func (siw *ServerInterfaceWrapper) GetRagReply(w http.ResponseWriter, r *http.Request) {
+// GetRagReplyPrompt operation middleware
+func (siw *ServerInterfaceWrapper) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "prompt" -------------
+	var prompt string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "prompt", chi.URLParam(r, "prompt"), &prompt, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "prompt", Err: err})
+		return
+	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetRagReply(w, r)
+		siw.Handler.GetRagReplyPrompt(w, r, prompt)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -226,7 +240,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/ping", wrapper.GetPing)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/rag-reply", wrapper.GetRagReply)
+		r.Get(options.BaseURL+"/rag-reply/{prompt}", wrapper.GetRagReplyPrompt)
 	})
 
 	return r

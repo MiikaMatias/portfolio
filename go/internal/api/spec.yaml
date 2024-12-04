@@ -12,21 +12,32 @@ paths:
             application/json:
               schema: 
                 $ref: '#/components/schemas/Pong'
+
   /encode-string:
     get:
+      summary: Get encoded vector
       responses:
         '200':
-          description: Return a semantic vector for any string
+          description: Returned a semantic vector for any string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EncodedVector'
 
-  /rag-reply:
+  /rag-reply/{prompt}:
     get:
+      summary: Get reply for a prompt through the RAG
+      parameters:
+        - in: path
+          name: prompt
+          schema: 
+            type: string
+          required: true
+          description: The query for something in the portfolio
+
       responses:
         '200':
-          description: Return a rag reply for a query
+          description: Returned a rag reply for a query
           content:
             application/json:
               schema:
