@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/MiikaMatias/portfolio/internal/api"
-	"github.com/MiikaMatias/portfolio/internal/api/gen"
+	"github.com/MiikaMatias/portfolio/api/gen"
+	"github.com/MiikaMatias/portfolio/internal/llmclient"
+	"github.com/MiikaMatias/portfolio/internal/redis"
+	"github.com/MiikaMatias/portfolio/internal/utils"
 	"github.com/go-chi/chi/v5"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -24,24 +24,9 @@ type Config struct {
 	} `yaml:"app"`
 }
 
-func loadConfig() (*Config, error) {
-	file, err := os.Open(CONFIG_FILE_PATH)
-	if err != nil {
-		return nil, err
-	}
-
-	var config Config
-	decoder := yaml.NewDecoder(file)
-
-	if err := decoder.Decode(&config); err != nil {
-		return nil, err
-	}
-
-	return &config, nil
-}
-
 func main() {
-	config, err := loadConfig()
+	config := Config{}
+	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
 		return
@@ -49,9 +34,12 @@ func main() {
 
 	log.Printf("Config: %s\n", config.App.WorkingDir)
 
-	server := api.NewServer()
+	server := llmclient.NewServer()
 	r := chi.NewMux()
 	h := gen.HandlerFromMux(server, r)
+
+	redisClient := redis.InitializeRedisClient()
+	log.Printf("Initialization of client complete: %s", redisClient)
 
 	portString := fmt.Sprintf("0.0.0.0:%s", config.App.BackendPort)
 	log.Printf("Server running on http://%s\n", portString)

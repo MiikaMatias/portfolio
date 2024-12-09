@@ -1,4 +1,4 @@
-package api
+package llmclient
 
 import (
 	"bytes"
@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/MiikaMatias/portfolio/internal/api/gen"
-	"gopkg.in/yaml.v2"
+	"github.com/MiikaMatias/portfolio/api/gen"
+	"github.com/MiikaMatias/portfolio/internal/utils"
 )
 
 const (
-	CONFIG_FILE_PATH = "internal/api/config.yaml"
+	CONFIG_FILE_PATH = "internal/llmclient/config.yaml"
 )
 
 type Config struct {
@@ -31,22 +30,6 @@ type VectorEmbedding struct {
 
 type LlmReply struct {
 	Response string `json:"response"`
-}
-
-func loadConfig() (*Config, error) {
-	file, err := os.Open(CONFIG_FILE_PATH)
-	if err != nil {
-		return nil, err
-	}
-
-	var config Config
-	decoder := yaml.NewDecoder(file)
-
-	if err := decoder.Decode(&config); err != nil {
-		return nil, err
-	}
-
-	return &config, nil
 }
 
 type Server struct{}
@@ -114,7 +97,8 @@ func getGeneratedResponse(prompt string, config Config) string {
 }
 
 func (Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
-	config, err := loadConfig()
+	config := Config{}
+	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
 		return
@@ -122,7 +106,7 @@ func (Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Utilising model: %s\n", config.App.EncodingModel)
 
-	llmReply := getVectorEncoding("hello", *config)
+	llmReply := getVectorEncoding("hello", config)
 
 	log.Printf("Reply decoded:", llmReply)
 
@@ -135,15 +119,16 @@ func (Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 }
 
 func (Server) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string) {
-	config, err := loadConfig()
+	config := Config{}
+	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
 	if err != nil {
-		log.Fatalf("Error: %s", err)
+		log.Fatalf("Error when opening config: %s", err)
 		return
 	}
 
 	log.Printf("Utilising model: %s\n", config.App.GeneratingModel)
 
-	llmReply := getGeneratedResponse(prompt, *config)
+	llmReply := getGeneratedResponse(prompt, config)
 
 	log.Printf("Reply decoded:", llmReply)
 

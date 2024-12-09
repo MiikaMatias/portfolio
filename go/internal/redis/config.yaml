@@ -1,0 +1,3 @@
+db:
+  redisip: "localhost"
+  redisport: "6379"
