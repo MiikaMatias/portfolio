@@ -32,10 +32,20 @@ type LlmReply struct {
 	Response string `json:"response"`
 }
 
-type Server struct{}
+type Server struct {
+	Config Config
+}
 
 func NewServer() Server {
-	return Server{}
+	config := Config{}
+	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
+	if err != nil {
+		log.Fatalf("Error when opening config: %s", err)
+	}
+
+	return Server{
+		Config: config,
+	}
 }
 
 func getVectorEncoding(prompt string, config Config) []float32 {
@@ -96,17 +106,10 @@ func getGeneratedResponse(prompt string, config Config) string {
 	return llmReply.Response
 }
 
-func (Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
-	config := Config{}
-	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
-	if err != nil {
-		log.Fatalf("Error: %s", err)
-		return
-	}
+func (s Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Utilising model: %s\n", s.Config.App.EncodingModel)
 
-	log.Printf("Utilising model: %s\n", config.App.EncodingModel)
-
-	llmReply := getVectorEncoding("hello", config)
+	llmReply := getVectorEncoding("hello", s.Config)
 
 	log.Printf("Reply decoded:", llmReply)
 
@@ -118,17 +121,10 @@ func (Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func (Server) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string) {
-	config := Config{}
-	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
-	if err != nil {
-		log.Fatalf("Error when opening config: %s", err)
-		return
-	}
+func (s Server) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string) {
+	log.Printf("Utilising model: %s\n", s.Config.App.GeneratingModel)
 
-	log.Printf("Utilising model: %s\n", config.App.GeneratingModel)
-
-	llmReply := getGeneratedResponse(prompt, config)
+	llmReply := getGeneratedResponse(prompt, s.Config)
 
 	log.Printf("Reply decoded:", llmReply)
 
