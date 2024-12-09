@@ -13,6 +13,7 @@ type Config struct {
 	DB struct {
 		RedisIp   string `yaml:"redisip"`
 		RedisPort string `yaml:"redisport"`
+		DataFile  string `yaml:"datafile"`
 	} `yaml:"db"`
 }
 

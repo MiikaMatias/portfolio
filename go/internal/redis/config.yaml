@@ -1,3 +1,4 @@
 db:
   redisip: "localhost"
   redisport: "6379"
+  datafile: "/home/miika/Project/portfolio/data/projects.json"
