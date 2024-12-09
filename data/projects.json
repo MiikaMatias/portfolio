@@ -1,0 +1,26 @@
+{
+    "ALR-DMC": {
+        "description": "Winning project for Junction, one of the largest hackathons in Europe! ALR-DMC is a browser extension and backend solution designed to enhance digital democracy by enabling real-time actionable prompts for users based on the content they are browsing. The backend is written in Python and uses Docker for containerization, ensuring consistent environments. Dependency management is handled with Poetry, while experimental Chrome AI APIs (Language Detection, Summarization, Prompt APIs) enable advanced content processing directly on the client side to prioritize user privacy by eliminating the need for server-side data transmission. Deployment involves cloud infrastructure for scalable support of backend services. The extension integrates with platforms like Change.org and Kansalaisaloite for civic engagement. Contributions by Miika Piiparinen include designing the backend architecture, setting up Dockerized environments, creating scalable cloud infrastructure, and assisting in ideation and prototyping during development.",
+        "link":"https://github.com/Junction-24/alrdmc-server",
+        "file_path":"NONE",
+        "key_words": "Flask backend, poetry dependency management, docker database, Google Cloud virtual machine, Selenium, Web scraping, JSON, Chrome addon, javascript, bash"
+    },
+    "Chess AI platform": {
+        "description": "The Chess AI platform is a modular system designed to assist students and developers in creating and managing chess-playing AI agents. Built using Python, the platform leverages Kubernetes for orchestration, enabling containerized environments for isolated AI development and testing. It includes CI/CD pipelines implemented through GitHub Actions to automate testing and deployment processes. Code coverage is monitored via Codecov, ensuring high-quality and well-tested code. The platform supports a staging environment for development and a production environment accessible via dedicated URLs. Comprehensive documentation includes user and admin manuals, setup instructions, and guidelines for extending the platform. Contributions by Miika Piiparinen include backend AI integration, implementing CI/CD workflows, optimizing the Kubernetes deployment strategy, and providing detailed documentation for users and developers.",
+        "link":"https://github.com/game-ai-platform-team/tira-ai-platform",
+        "file_path":"",
+        "key_words": "High Performance Computing, SSH, Singularity, Docker, TypeScript, OpenShift in the initial phase, Python Flask backend, Mermaid, bash"
+    },
+    "Bike Maintanance Project": {
+        "description": "The Bike Maintenance Project provides data-driven insights into bike route usage in Helsinki to aid urban planning efforts. The system processes bike ride data (2016-2024) using Python and leverages TimescaleDB, deployed through Docker, for time-series data management. Flask serves as the backend framework, offering APIs for data access and visualizations integrated with the Google Maps API. A `.env` file is required for configuration with the user's Google Maps API key. Deployment is automated via a `buildrun.sh` script, which sets up the local development environment and provides a Flask-based interface for interacting with the data. Contributions by Miika Piiparinen include backend implementation, creating data analysis pipelines, integrating external APIs, and configuring Dockerized environments for seamless local and production deployments.",
+        "link":"https://github.com/hki-intro-to-ds-project-2024/intro-to-ds-2024",
+        "file_path":"",
+        "key_words": "TimescaleDB, Python flask, TypeScript, Docker, Google Maps API, Google Cloud, ARIMA, bash"
+    },
+    "Imageboard": {
+        "description": "The Imageboard project is a web application designed for community-driven, image-based messaging boards. The backend is implemented in Flask and connected to a PostgreSQL database. It is deployed within a Kubernetes cluster on AWS Elastic Kubernetes Service (EKS). Application logic and the database run in separate containers, orchestrated by Kubernetes for reliability and scalability. Key features include user registration with encrypted password storage, thread creation with mandatory image uploads, dynamic thread sorting by activity, and user dashboards displaying personal contributions. Local deployment uses Minikube and a `redeploy.sh` script, while production deployment involves pipelines integrated with Jenkins and manual configuration for Kubernetes manifests. Contributions by Miika Piiparinen include designing and implementing the Flask API, creating Kubernetes deployment configurations, designing database schemas, and developing the user interface and feature set.",
+        "link":"https://github.com/MiikaMatias/tsoha",
+        "file_path":"",
+        "key_words": "Flask backend, HTML, kubernetes, AWS, EKS, Jenkins, CI/CD, PostgreSQL, bash"
+    }
+}
