@@ -40,7 +40,7 @@ func main() {
 	portString := fmt.Sprintf(":%s", config.App.BackendPort)
 	log.Printf("Server running on http://0.0.0.0%s\n", portString)
 	s := &http.Server{
-		Handler: h,
+		Handler: utils.CorsMiddleware(h),
 		Addr:    portString,
 	}
 

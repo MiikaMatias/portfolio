@@ -9,8 +9,8 @@ in pkgs.mkShell {
 
     shellHook=''
         echo "Welcome to developer environment!"
-        alias generate="./scripts/generate.sh"
-        alias run="./scripts/run.sh"
+        alias generate="bash ./scripts/generate.sh"
+        alias run="bash ./scripts/run.sh"
         alias nix-web="./scripts/run_web.sh"
         alias nix-tunnel="./scripts/tunnel.sh"
     '';

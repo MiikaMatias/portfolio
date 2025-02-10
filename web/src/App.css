@@ -105,7 +105,11 @@
 
   .portfolio {
     animation: fadeInUp 3s forwards;
-    animation-delay: 1s;
+    animation-delay: 9s;
+  }
+  .answer-box {
+    animation: fadeInUp 3s forwards;
+    animation-delay: 9s;
   }
 }
 
@@ -215,4 +219,26 @@
 .portfolio input {
   text-align: left;
   width: 400px;
+}
+
+.answer-box {
+  background-color: #FF703F; 
+  color: #fff;
+  padding: 20px;
+  z-index: 100;
+  font-size: 18px;
+  opacity: 0;
+  letter-spacing: 1px;
+  border-radius: 8px;
+  text-align: left;
+  box-shadow: 0 0 10px rgba(255, 112, 63, 0.5);
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  margin-top: 10px;
+}
+
+.answer-box p {
+  color: #fff;
+  white-space: pre-line;
 }
