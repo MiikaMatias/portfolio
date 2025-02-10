@@ -24,26 +24,46 @@ type RagReply struct {
 	RagReply string `json:"RagReply"`
 }
 
+// GetEncodeStringParams defines parameters for GetEncodeString.
+type GetEncodeStringParams struct {
+	// String The string to be encoded
+	String string `form:"string" json:"string"`
+}
+
+// GetRagReplyParams defines parameters for GetRagReply.
+type GetRagReplyParams struct {
+	// Prompt The query for something in the portfolio
+	Prompt string `form:"prompt" json:"prompt"`
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (GET /)
+	Get(w http.ResponseWriter, r *http.Request)
 	// Get encoded vector
 	// (GET /encode-string)
-	GetEncodeString(w http.ResponseWriter, r *http.Request)
+	GetEncodeString(w http.ResponseWriter, r *http.Request, params GetEncodeStringParams)
 
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
 	// Get reply for a prompt through the RAG
-	// (GET /rag-reply/{prompt})
-	GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string)
+	// (GET /rag-reply)
+	GetRagReply(w http.ResponseWriter, r *http.Request, params GetRagReplyParams)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
 
+// (GET /)
+func (_ Unimplemented) Get(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // Get encoded vector
 // (GET /encode-string)
-func (_ Unimplemented) GetEncodeString(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) GetEncodeString(w http.ResponseWriter, r *http.Request, params GetEncodeStringParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -53,8 +73,8 @@ func (_ Unimplemented) GetPing(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get reply for a prompt through the RAG
-// (GET /rag-reply/{prompt})
-func (_ Unimplemented) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string) {
+// (GET /rag-reply)
+func (_ Unimplemented) GetRagReply(w http.ResponseWriter, r *http.Request, params GetRagReplyParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -67,11 +87,45 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+// Get operation middleware
+func (siw *ServerInterfaceWrapper) Get(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.Get(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetEncodeString operation middleware
 func (siw *ServerInterfaceWrapper) GetEncodeString(w http.ResponseWriter, r *http.Request) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetEncodeStringParams
+
+	// ------------- Required query parameter "string" -------------
+
+	if paramValue := r.URL.Query().Get("string"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "string"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "string", r.URL.Query(), &params.String)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "string", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetEncodeString(w, r)
+		siw.Handler.GetEncodeString(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -95,22 +149,31 @@ func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Reques
 	handler.ServeHTTP(w, r)
 }
 
-// GetRagReplyPrompt operation middleware
-func (siw *ServerInterfaceWrapper) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request) {
+// GetRagReply operation middleware
+func (siw *ServerInterfaceWrapper) GetRagReply(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "prompt" -------------
-	var prompt string
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetRagReplyParams
 
-	err = runtime.BindStyledParameterWithOptions("simple", "prompt", chi.URLParam(r, "prompt"), &prompt, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	// ------------- Required query parameter "prompt" -------------
+
+	if paramValue := r.URL.Query().Get("prompt"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "prompt"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "prompt", r.URL.Query(), &params.Prompt)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "prompt", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetRagReplyPrompt(w, r, prompt)
+		siw.Handler.GetRagReply(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -234,13 +297,16 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/", wrapper.Get)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/encode-string", wrapper.GetEncodeString)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/ping", wrapper.GetPing)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/rag-reply/{prompt}", wrapper.GetRagReplyPrompt)
+		r.Get(options.BaseURL+"/rag-reply", wrapper.GetRagReply)
 	})
 
 	return r

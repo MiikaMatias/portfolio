@@ -2,4 +2,8 @@
 app:
   name: NLPortfolio
   workingDir: /home/miika/Project/portfolio/go
-  backendPort: 8080
+  backendPort: 8888
+  encodingUrl: http://localhost:11434/api/embeddings
+  encodingModel: mxbai-embed-large
+  generatingUrl: http://localhost:11434/api/generate
+  generatingModel: mistral

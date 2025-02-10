@@ -7,22 +7,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/MiikaMatias/portfolio/api/gen"
 	"github.com/MiikaMatias/portfolio/internal/utils"
 )
 
 const (
 	CONFIG_FILE_PATH = "internal/llmclient/config.yaml"
 )
-
-type Config struct {
-	App struct {
-		EncodingUrl     string `yaml:"encodingUrl"`
-		EncodingModel   string `yaml:"encodingModel"`
-		GeneratingUrl   string `yaml:"generatingUrl"`
-		GeneratingModel string `yaml:"generatingModel"`
-	} `yaml:"app"`
-}
 
 type VectorEmbedding struct {
 	Embedding []float32 `json:"embedding"`
@@ -32,23 +22,7 @@ type LlmReply struct {
 	Response string `json:"response"`
 }
 
-type Server struct {
-	Config Config
-}
-
-func NewServer() Server {
-	config := Config{}
-	err := utils.CastConfig(CONFIG_FILE_PATH, &config)
-	if err != nil {
-		log.Fatalf("Error when opening config: %s", err)
-	}
-
-	return Server{
-		Config: config,
-	}
-}
-
-func getVectorEncoding(prompt string, config Config) []float32 {
+func GetVectorEncoding(prompt string, config utils.Config) []float32 {
 	body := []byte(fmt.Sprintf(`{
 		"model": "%s",
 		"prompt": "%s"
@@ -64,7 +38,6 @@ func getVectorEncoding(prompt string, config Config) []float32 {
 	if err != nil {
 		log.Fatalf("Error sending POST request: %s", err)
 	}
-	log.Printf("Received response: %s", res)
 	defer res.Body.Close()
 
 	vectorReply := &VectorEmbedding{}
@@ -76,7 +49,7 @@ func getVectorEncoding(prompt string, config Config) []float32 {
 	return vectorReply.Embedding
 }
 
-func getGeneratedResponse(prompt string, config Config) string {
+func GetGeneratedResponse(prompt string, config utils.Config) string {
 	body := []byte(fmt.Sprintf(`{
 		"model": "%s",
 		"prompt": "%s",
@@ -93,7 +66,6 @@ func getGeneratedResponse(prompt string, config Config) string {
 	if err != nil {
 		log.Fatalf("Error sending POST request: %s", err)
 	}
-	log.Printf("Received response: %s", res)
 	defer res.Body.Close()
 
 	llmReply := &LlmReply{}
@@ -104,40 +76,4 @@ func getGeneratedResponse(prompt string, config Config) string {
 	log.Printf("Decoded response: %v", llmReply.Response)
 
 	return llmReply.Response
-}
-
-func (s Server) GetEncodeString(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Utilising model: %s\n", s.Config.App.EncodingModel)
-
-	llmReply := getVectorEncoding("hello", s.Config)
-
-	log.Printf("Reply decoded:", llmReply)
-
-	resp := gen.EncodedVector{
-		EncodedVector: llmReply,
-	}
-
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
-}
-
-func (s Server) GetRagReplyPrompt(w http.ResponseWriter, r *http.Request, prompt string) {
-	log.Printf("Utilising model: %s\n", s.Config.App.GeneratingModel)
-
-	llmReply := getGeneratedResponse(prompt, s.Config)
-
-	log.Printf("Reply decoded:", llmReply)
-
-	resp := gen.RagReply{
-		RagReply: llmReply,
-	}
-
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(resp)
-}
-
-func (Server) GetPing(w http.ResponseWriter, r *http.Request) {
-	resp := "Pong"
-
-	w.Write([]byte(resp))
 }

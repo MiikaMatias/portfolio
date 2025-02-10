@@ -3,19 +3,26 @@ info:
   version: 1.0.0
   title: NLPortfolio
 paths:
-  /ping:
+  /:
     get:
       responses:
         '200':
-          description: ping
+          description: return index.html
           content:
-            application/json:
-              schema: 
-                $ref: '#/components/schemas/Pong'
+              text/html:
+                schema:
+                  type: string       
 
   /encode-string:
     get:
       summary: Get encoded vector
+      parameters:
+        - in: query
+          name: string
+          schema: 
+            type: string
+          required: true
+          description: The string to be encoded
       responses:
         '200':
           description: Returned a semantic vector for any string
@@ -24,11 +31,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/EncodedVector'
 
-  /rag-reply/{prompt}:
+  /rag-reply:
     get:
       summary: Get reply for a prompt through the RAG
       parameters:
-        - in: path
+        - in: query
           name: prompt
           schema: 
             type: string
@@ -42,6 +49,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RagReply'
+
+  /ping:
+    get:
+      responses:
+        '200':
+          description: ping
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Pong'
 
 components:
   schemas:
