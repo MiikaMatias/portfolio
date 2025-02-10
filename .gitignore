@@ -23,6 +23,8 @@ go.work.sum
 
 # env file
 .env
-shell.nix
+
+go/api/gen/
+web/src/api.d.ts
 
 *tunnel.sh

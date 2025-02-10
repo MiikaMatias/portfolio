@@ -1,16 +1,15 @@
 import { useState } from 'react'
 import './App.css'
 import NavBar from './components/NavBar'
+import Intro from './components/Introduction'
+import Portfolio from './components/Portfolio'
 
 function App() {
   return (  
     <>
-      <NavBar></NavBar>
-      <div class="main-content">
-        <h1 className="introduction">
-          <a>Hey, I'm Miika's porfolio! Ask me anything...</a>
-          <input></input>
-        </h1>        
+      <div className="main-content">
+        <Intro></Intro>
+        <Portfolio></Portfolio>
       </div>
     </>
   )
